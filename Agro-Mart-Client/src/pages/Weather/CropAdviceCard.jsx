@@ -21,7 +21,6 @@ const getCropAdvice = (temp, weatherMain, t) => {
 // CropAdviceCard component
 const CropAdviceCard = ({ weather }) => {
   const { t } = useTranslation();
-  console.log("Received weather in CropAdviceCard:", weather);
 
   if (!weather?.main || !weather?.weather) return null;
 

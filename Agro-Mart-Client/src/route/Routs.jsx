@@ -19,7 +19,7 @@ import Customers from "../pages/Dashboard/Customers/Customers";
 import PasswordReset from "../pages/password-reset/PasswordReset";
 import ShoppingCart from "../pages/shopingCart/ShoppingCart";
 import Wishlist from "../pages/Shop/Wishlist/Wishlist";
-import StripePayment from "../pages/Payment/StripePayment";
+import LocalPayment from "../pages/Payment/StripePayment";
 import BKashPayment from "../pages/Payment/bKashPayment";
 import NagadPayment from "../pages/Payment/NagadPayment";
 import SslCommerzePayment from "../pages/Payment/SslCommerzePayment";
@@ -60,8 +60,12 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "/payment/local",
+        element: <LocalPayment></LocalPayment>,
+      },
+      {
         path: "/payment/stripe",
-        element: <StripePayment></StripePayment>,
+        element: <LocalPayment></LocalPayment>,
       },
       {
         path: "/payment/success",

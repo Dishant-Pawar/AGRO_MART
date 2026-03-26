@@ -9,12 +9,11 @@ const useWishlist = () => {
   const { data: wishlist = [], refetch: wishRefetch } = useQuery({
     queryKey: ["wishlist", user?.email],
     queryFn: async () => {
-      if (user) {
-        const { data } = await axiosSecure.get(`/wishlist/${user?.email}`);
-        return data;
-      }
+      if (!user?.email) return [];
+      const { data } = await axiosSecure.get(`/wishlist/${user?.email}`);
+      return data || [];
     },
-    // enabled: !!user,
+    enabled: !!user?.email,
   });
   return [wishlist, wishRefetch];
 };

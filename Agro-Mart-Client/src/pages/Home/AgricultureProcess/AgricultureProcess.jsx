@@ -79,7 +79,6 @@ const AgricultureProcess = () => {
                   className={`${
                     theme === "dark" ? "text-green-600" : "text-green-700"
                   } text-3xl font-bold`}
-                  font-bold
                 >
                   {" "}
                   <LocalizedNumber number={experienceNumber} />+{" "}

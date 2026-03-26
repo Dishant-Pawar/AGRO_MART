@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Loading from "../../../../components/loading/Loading";
 import { ThemeContext } from "../../../../provider/ThemeProvider";
 import useAxiosSecure from "../../../../hooks/useAxiosSecure";
+import useAuth from "../../../../hooks/useAuth";
 
 const ManageProduct = () => {
   const { t } = useTranslation();
@@ -16,21 +17,27 @@ const ManageProduct = () => {
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
+  const user = useAuth();
 
   const fetchProducts = async () => {
     try {
-      const response = await axiosSecure.get("/products");
-      console.log("Fetched Products:", response.data);
-      if (Array.isArray(response.data)) {
-        setProducts(response.data);
-      } else {
-        setError(t("dashboard.seller.manage-product.format_error"));
+      if (!user?.email) {
+        setLoading(false);
+        return;
       }
+      const response = await axiosSecure.get("/products");
+      const allProducts = Array.isArray(response.data.products) ? response.data.products : [];
+      
+      // Filter products to show only those added by the current farmer
+      const farmerProducts = allProducts.filter(
+        (product) => product.addedBy?.email === user.email
+      );
+      
+      setProducts(farmerProducts);
       setLoading(false);
     } catch (err) {
       setError(t("dashboard.seller.manage-product.fetch_error"));
       setLoading(false);
-      console.error(err);
     }
   };
 

@@ -26,7 +26,6 @@ const Navbar = () => {
   const [cart] = useCart();
   const [wishlist] = useWishlist();
   const isHomePage = location.pathname === "/";
-  console.log("nav", user);
 
   let dashboardLink = "/dashboard";
 

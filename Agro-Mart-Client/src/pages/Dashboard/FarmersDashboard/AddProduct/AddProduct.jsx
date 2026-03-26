@@ -7,7 +7,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ThemeContext } from "../../../../provider/ThemeProvider";
 
-const image_hosting_key = import.meta.env.VITE_IMGBB_HOSTING_KEY;
+const image_hosting_key =
+  import.meta.env.VITE_IMAGE_HOSTING_KEY ||
+  import.meta.env.VITE_IMGBB_HOSTING_KEY;
 const image_upload_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`;
 
 const AddProduct = () => {
@@ -30,6 +32,12 @@ const AddProduct = () => {
     const description = formData.get("description");
     const stockQuantity = parseInt(formData.get("stockQuantity"));
     const imageFile = formData.get("image");
+
+    if (!image_hosting_key) {
+      toast.error("Image hosting key is missing in .env");
+      setLoading(false);
+      return;
+    }
 
     let imageUrl = "";
     if (imageFile) {
@@ -71,7 +79,6 @@ const AddProduct = () => {
         productData
       );
 
-      console.log("Product Added:", data);
       toast.success(t("dashboard.seller.add-product.toast_success"));
       e.target.reset();
       navigate("/dashboard/manageProduct");

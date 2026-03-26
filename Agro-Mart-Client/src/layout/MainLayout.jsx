@@ -13,7 +13,9 @@ const MainLayout = () => {
   const isShopPage = location.pathname === "/shop";
   const isSignUpPage = location.pathname === "/register";
   const isResetPasswordPage = location.pathname === "/password/reset";
-  const isStripePaymentPage = location.pathname === "/payment/stripe";
+  const isCheckoutPage =
+    location.pathname === "/payment/stripe" ||
+    location.pathname === "/payment/local";
   return (
     <div className={`${theme === "dark" ? "" : "bg-gray-100"}`}>
       <div
@@ -30,7 +32,7 @@ const MainLayout = () => {
           !isLoginPage &&
           !isSignUpPage &&
           !isResetPasswordPage &&
-          !isStripePaymentPage
+          !isCheckoutPage
             ? "max-w-7xl mx-auto md:space-y-5 md:p-5 xl:p-0"
             : ""
         }`}
@@ -41,7 +43,7 @@ const MainLayout = () => {
             !isLoginPage &&
             !isSignUpPage &&
             !isResetPasswordPage &&
-            !isStripePaymentPage
+            !isCheckoutPage
               ? "mt-3"
               : ""
           }`}

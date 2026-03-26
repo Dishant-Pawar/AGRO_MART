@@ -192,7 +192,6 @@ const ServiceCard = () => {
   if (isLoading) {
     return <Loading></Loading>;
   }
-  console.log(products);
 
   return (
     <>

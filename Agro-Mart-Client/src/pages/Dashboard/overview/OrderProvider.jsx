@@ -2,7 +2,7 @@ import { createContext, useState, useEffect } from "react";
 
 export const OrderContext = createContext();
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const OrderProvider = ({ children }) => {
     const [orders, setOrders] = useState([]);
@@ -10,10 +10,14 @@ const OrderProvider = ({ children }) => {
     const fetchOrders = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/orders?limit=10&sort=desc`);
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
             const data = await res.json();
             setOrders(data.orders || []);
         } catch (error) {
             console.error("Failed to fetch orders:", error);
+            setOrders([]);
         }
     };
 

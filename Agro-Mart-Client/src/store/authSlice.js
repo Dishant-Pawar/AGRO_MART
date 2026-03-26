@@ -9,16 +9,34 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { auth, db } from "../firebase/firebase.init";
+import { auth } from "../firebase/firebase.init";
 import axios from "axios";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const provider = new GoogleAuthProvider();
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// Configuration
-const MAX_ATTEMPTS = 3;
-const LOCK_DURATION = 1 * 60 * 1000;
+const getFirebaseAuthMessage = (code) => {
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Invalid email or password.";
+    case "auth/invalid-email":
+      return "Invalid email format.";
+    case "auth/too-many-requests":
+      return "Too many requests. Please try again later.";
+    case "auth/network-request-failed":
+      return "Network error. Check your internet connection and try again.";
+    case "auth/email-already-in-use":
+      return "This email is already registered.";
+    case "auth/operation-not-allowed":
+      return "Email/password sign-in is disabled in Firebase project settings.";
+    case "auth/weak-password":
+      return "Password should be at least 6 characters.";
+    default:
+      return "Login failed. Please try again.";
+  }
+};
 
 // Token management
 const storeToken = (token) => localStorage.setItem("accessToken", token);
@@ -40,9 +58,10 @@ export const signUpUser = createAsyncThunk(
   "auth/signUpUser",
   async ({ email, password, name, photo }, { rejectWithValue }) => {
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        email,
+        normalizedEmail,
         password
       );
       const user = userCredential.user;
@@ -52,10 +71,10 @@ export const signUpUser = createAsyncThunk(
         photoURL: photo,
       });
 
-      const token = await fetchToken(email);
+      const token = await fetchToken(normalizedEmail);
       return { user: { ...user, displayName: name, photoURL: photo } };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(getFirebaseAuthMessage(error?.code));
     }
   }
 );
@@ -64,99 +83,63 @@ export const signUpUser = createAsyncThunk(
 export const signInUser = createAsyncThunk(
   "auth/signInUser",
   async ({ email, password }, { rejectWithValue }) => {
-    const normalizedEmail = email.toLowerCase();
-
-    try {
-      // First check if account is locked and if the lock has expired
-      const userRef = doc(db, "failedLogins", normalizedEmail);
-      const userDoc = await getDoc(userRef);
-
-      if (userDoc.exists()) {
-        const { lockedUntil } = userDoc.data();
-
-        // If account is currently locked
-        if (lockedUntil && Date.now() < lockedUntil) {
-          const remainingTime = Math.ceil(
-            (lockedUntil - Date.now()) / (60 * 1000)
-          );
-          return rejectWithValue(
-            `Account locked. Try again in ${remainingTime} minute(s).`
-          );
-        }
-        // If lock has expired, reset the attempts
-        else if (lockedUntil) {
-          await setDoc(
-            userRef,
-            {
-              attempts: 0,
-              lockedUntil: null,
-              lastAttempt: null,
-            },
-            { merge: true }
-          );
-        }
-      }
-
-      // Proceed with normal login
+    const normalizedEmail = email.trim().toLowerCase();
+    const signInWithFirebase = async () => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         normalizedEmail,
         password
       );
+      await fetchToken(normalizedEmail);
+      return { user: userCredential.user };
+    };
 
-      //  on successful login reset attempts
-      await setDoc(
-        userRef,
-        {
-          attempts: 0,
-          lockedUntil: null,
-          lastAttempt: null,
-        },
-        { merge: true }
+    // Primary path: Firebase sign-in first.
+    // This avoids a noisy sign-up API request on every successful login.
+    try {
+      return await signInWithFirebase();
+    } catch (authError) {
+      const canTryLegacySync = [
+        "auth/invalid-credential",
+        "auth/user-not-found",
+        "auth/wrong-password",
+      ].includes(authError?.code);
+
+      if (!canTryLegacySync) {
+        return rejectWithValue(getFirebaseAuthMessage(authError?.code));
+      }
+    }
+
+    // Fallback path: legacy MongoDB credential sync.
+    try {
+      const { data: legacyUser } = await axios.get(
+        `${API_URL}/user/${normalizedEmail}`
       );
 
-      return { user: userCredential.user };
-    } catch (authError) {
-      // Handle failed login attempt
-      let errorMessage = "Login failed";
+      const isLegacyPasswordMatch =
+        legacyUser?.email && legacyUser?.password === password;
 
-      try {
-        const userRef = doc(db, "failedLogins", normalizedEmail);
-        const userDoc = await getDoc(userRef);
-        const userData = userDoc.exists() ? userDoc.data() : {};
-        const attempts = userData.attempts ? userData.attempts + 1 : 1;
-
-        if (attempts >= MAX_ATTEMPTS) {
-          await setDoc(
-            userRef,
-            {
-              attempts,
-              lockedUntil: Date.now() + LOCK_DURATION,
-              lastAttempt: new Date().toISOString(),
-            },
-            { merge: true }
-          );
-          errorMessage = `Too many failed attempts. Account locked for ${
-            LOCK_DURATION / (60 * 1000)
-          } minutes.`;
-        } else {
-          await setDoc(
-            userRef,
-            {
-              attempts,
-              lockedUntil: null,
-              lastAttempt: new Date().toISOString(),
-            },
-            { merge: true }
-          );
-          errorMessage = `Invalid email or password. Attempt ${attempts} of ${MAX_ATTEMPTS}.`;
-        }
-      } catch (firestoreError) {
-        console.log("Account lockout service unavailable:", firestoreError);
-        errorMessage = "Invalid email or password. System features limited.";
+      if (!isLegacyPasswordMatch) {
+        return rejectWithValue(getFirebaseAuthMessage("auth/invalid-credential"));
       }
 
-      return rejectWithValue(errorMessage);
+      try {
+        const createdUserCredential = await createUserWithEmailAndPassword(
+          auth,
+          normalizedEmail,
+          password
+        );
+        await fetchToken(normalizedEmail);
+        return { user: createdUserCredential.user };
+      } catch (createError) {
+        if (createError?.code === "auth/email-already-in-use") {
+          return await signInWithFirebase();
+        }
+
+        return rejectWithValue(getFirebaseAuthMessage(createError?.code));
+      }
+    } catch {
+      return rejectWithValue(getFirebaseAuthMessage("auth/invalid-credential"));
     }
   }
 );
@@ -305,7 +288,6 @@ const authSlice = createSlice({
       })
       .addCase(googleLogin.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        console.log(state.user);
         state.loading = false;
       })
       .addCase(googleLogin.rejected, (state, action) => {

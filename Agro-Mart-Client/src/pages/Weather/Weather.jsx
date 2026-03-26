@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import WeatherCard from "./WeatherCard";
 import SuggestedProducts from "./SuggestedProducts";
@@ -9,20 +9,6 @@ const Weather = () => {
   const { t } = useTranslation();
   const [weatherType, setWeatherType] = React.useState(null);
   const [weather, setWeather] = React.useState(null);
-
-  useEffect(() => {
-    if (weatherType) {
-      console.log("Weather type updated:", weatherType);
-    }
-  }, [weatherType]);
-
-  useEffect(() => {
-    // Fetching weather data or other logic to set weather
-    // Assuming you are getting this data from WeatherCard component
-    if (weather) {
-      console.log("Weather data:", weather);
-    }
-  }, [weather]);
 
   return (
     <div className="p-6 ">

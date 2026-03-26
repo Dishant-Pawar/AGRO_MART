@@ -12,7 +12,6 @@ import Loading from "../loading/Loading";
 export default () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
-  const [reviews, setReviews] = useState([]);
   const { theme } = useContext(ThemeContext);
   const { t } = useTranslation();
   const axiosPublic = useAxiosPublic();
@@ -36,6 +35,9 @@ export default () => {
   if (isLoading) {
     return <Loading></Loading>;
   }
+
+  const slideCount = instanceRef.current?.track?.details?.slides?.length ?? 0;
+  const safeReviews = Array.isArray(UserReviews) ? UserReviews : [];
 
   return (
     <div className="pt-20">
@@ -71,8 +73,11 @@ export default () => {
         >
           <div className="navigation-wrapper max-w-4xl mx-auto">
             <div ref={sliderRef} className="keen-slider">
-              {UserReviews.map((r) => (
-                <div className="keen-slider__slide number-slide2 flex-col">
+              {safeReviews.map((r, index) => (
+                <div
+                  key={r?._id || `${r?.name || "review"}-${index}`}
+                  className="keen-slider__slide number-slide2 flex-col"
+                >
                   {/* <p className="my-2">
                     <strong>Rating:</strong> 0 / 5
                   </p> */}
@@ -95,7 +100,7 @@ export default () => {
               ))}
             </div>
 
-            {loaded && instanceRef.current && (
+            {loaded && slideCount > 0 && instanceRef.current && (
               <>
                 <Arrow
                   left
@@ -108,22 +113,15 @@ export default () => {
                   onClick={(e) =>
                     e.stopPropagation() || instanceRef.current?.next()
                   }
-                  disabled={
-                    currentSlide ===
-                    instanceRef.current.track.details.slides.length - 1
-                  }
+                  disabled={currentSlide === slideCount - 1}
                 />
               </>
             )}
           </div>
 
-          {loaded && instanceRef.current && (
+          {loaded && slideCount > 0 && instanceRef.current && (
             <div className="dots">
-              {[
-                ...Array(
-                  instanceRef.current.track.details.slides.length
-                ).keys(),
-              ].map((idx) => {
+              {[...Array(slideCount).keys()].map((idx) => {
                 return (
                   <button
                     key={idx}

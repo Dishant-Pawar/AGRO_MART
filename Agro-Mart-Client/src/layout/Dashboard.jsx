@@ -18,7 +18,6 @@ const Dashboard = () => {
   const [role] = useRole();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  console.log(role);
   const signOutUser = async () => {
     try {
       await dispatch(logOut()).unwrap();

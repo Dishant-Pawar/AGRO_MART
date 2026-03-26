@@ -17,6 +17,7 @@ const MyOrders = () => {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [orderData, setOrderData] = useState([]);
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
   const axiosSecure = useAxiosSecure();
   const user = useAuth();
 
@@ -46,39 +47,61 @@ const MyOrders = () => {
     }
   };
 
+  const toggleOrderDetails = (orderId) => {
+    setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
+  };
+
   return (
     <div className="py-10">
       <h2 className="text-center text-3xl font-bold mb-10">
         {t("dashboard.my_orders.title")}
       </h2>
 
-      <div className="overflow-x-auto">
-        <table className="table w-full">
-          <thead>
-            <tr
-              className={`${
-                theme === "dark" ? "bg-base-100" : "bg-gray-100"
-              } text-base-content`}
+      {orderData.length > 0 ? (
+        <div className="space-y-4">
+          {orderData.map((order) => (
+            <div
+              key={order._id}
+              className={`border rounded-lg p-4 ${
+                theme === "dark"
+                  ? "border-gray-600 bg-base-800"
+                  : "border-gray-300 bg-white"
+              }`}
             >
-              <th>{t("dashboard.my_orders.table_headers.invoice_no")}</th>
-              <th>{t("dashboard.my_orders.table_headers.order_time")}</th>
-              <th>{t("dashboard.my_orders.table_headers.customer_email")}</th>
-              <th>{t("dashboard.my_orders.table_headers.method")}</th>
-              <th>{t("dashboard.my_orders.table_headers.amount")}</th>
-              <th>{t("dashboard.my_orders.table_headers.status")}</th>
-              <th>{t("dashboard.my_orders.table_headers.invoice")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderData.length > 0 ? (
-              orderData.map((order) => (
-                <tr key={order._id}>
-                  <td className="font-semibold">{order.invoiceNo}</td>
-                  <td>{new Date(order.date).toISOString().split("T")[0]}</td>
-                  <td>{order.email}</td>
-                  <td className="font-semibold">{order.method}</td>
-                  <td className="font-semibold">{order.totalAmount}</td>
-                  <td>
+              {/* Order Header */}
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={() => toggleOrderDetails(order._id)}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 flex-1">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">
+                      {t("dashboard.my_orders.table_headers.invoice_no")}
+                    </p>
+                    <p className="font-bold">{order.invoiceNo}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">
+                      {t("dashboard.my_orders.table_headers.order_time")}
+                    </p>
+                    <p>{new Date(order.date).toISOString().split("T")[0]}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">
+                      {t("dashboard.my_orders.table_headers.amount")}
+                    </p>
+                    <p className="font-bold">৳ {order.totalAmount}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">
+                      {t("dashboard.my_orders.table_headers.method")}
+                    </p>
+                    <p>{order.method}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">
+                      {t("dashboard.my_orders.table_headers.status")}
+                    </p>
                     <span
                       className={`badge ${
                         statusColors[order.status] || "badge-ghost"
@@ -88,29 +111,65 @@ const MyOrders = () => {
                         defaultValue: order.status,
                       })}
                     </span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() =>
-                        handleDownloadOrder(order._id, order.invoiceNo)
-                      }
-                      className="btn btn-ghost btn-sm"
-                    >
-                      <FaPrint size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="text-center py-4">
-                  {t("dashboard.my_orders.no_orders")}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  </div>
+                </div>
+                <button className="btn btn-ghost btn-sm ml-4">
+                  <FaPrint size={16} />
+                </button>
+              </div>
+
+              {/* Order Items - Expandable */}
+              {expandedOrderId === order._id && order.cartItems && (
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="font-bold mb-3">
+                    {t("dashboard.my_orders.items") || "Items"}
+                  </h4>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {order.cartItems.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex justify-between items-center p-2 rounded ${
+                          theme === "dark"
+                            ? "bg-gray-700"
+                            : "bg-gray-100"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          {item.image && (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                          )}
+                          <div>
+                            <p className="font-semibold">{item.name}</p>
+                            <p className="text-sm text-gray-500">
+                              {t("dashboard.my_orders.quantity")}: {item.orderedQuantity}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">৳ {item.price}</p>
+                          <p className="text-sm text-gray-500">
+                            {t("dashboard.my_orders.subtotal")}: ৳ {(item.price * item.orderedQuantity).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-10">
+          <p className="text-lg text-gray-500">
+            {t("dashboard.my_orders.no_orders")}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
