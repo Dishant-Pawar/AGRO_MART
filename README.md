@@ -24,6 +24,7 @@
 - [Key Features](#-key-features)
 - [Technology Stack](#-technology-stack)
 - [Getting Started](#-getting-started)
+- [Deployment](#-deployment)
 - [Project Structure](#-project-structure)
 - [API Documentation](#-api-documentation)
 - [Database Schema](#-database-schema)
@@ -155,7 +156,7 @@ cd Agro-Mart
 
 #### 2. Backend Setup
 ```bash
-cd server
+cd Agro-Mart-Server
 npm install
 ```
 
@@ -167,6 +168,8 @@ TOKEN_SECRET_KEY=your_jwt_secret_key
 STRIPE_SECRET_KEY=your_stripe_secret_key
 STORE_ID=your_sslcommerz_store_id
 STORE_PASSWORD=your_sslcommerz_store_password
+FRONTEND_URL=https://your-firebase-site.web.app
+BACKEND_URL=https://your-vercel-app.vercel.app
 IS_LIVE=false
 ```
 
@@ -177,7 +180,7 @@ npm start
 
 #### 3. Frontend Setup
 ```bash
-cd client
+cd ../Agro-Mart-Client
 npm install
 ```
 
@@ -188,6 +191,10 @@ VITE_STRIPE_PUBLIC_KEY=your_stripe_public_key
 VITE_FIREBASE_API_KEY=your_firebase_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
+VITE_IMAGE_HOSTING_KEY=your_imgbb_key
 ```
 
 Start the development server:
@@ -201,24 +208,70 @@ npm run dev
 
 ---
 
+## 🚀 Deployment
+
+### 1. Deploy Backend (Vercel)
+
+1. Import the `Agro-Mart-Server` folder into Vercel as a project.
+2. Set the following environment variables in Vercel project settings:
+  - `PORT=5000`
+  - `MONGO_URI`
+  - `TOKEN_SECRET_KEY`
+  - `STRIPE_SECRET_KEY`
+  - `STORE_ID`
+  - `STORE_PASSWORD`
+  - `FRONTEND_URL=https://your-firebase-site.web.app`
+  - `BACKEND_URL=https://your-vercel-app.vercel.app`
+  - `IS_LIVE=false` (or `true` for live SSLCommerz credentials)
+3. Deploy and copy your live backend URL.
+
+### 2. Deploy Frontend (Firebase Hosting)
+
+1. In `Agro-Mart-Client`, set production values in environment variables:
+  - `VITE_API_URL=https://your-vercel-app.vercel.app`
+  - `VITE_STRIPE_PUBLIC_KEY`
+  - `VITE_FIREBASE_API_KEY`
+  - `VITE_FIREBASE_AUTH_DOMAIN`
+  - `VITE_FIREBASE_PROJECT_ID`
+  - `VITE_FIREBASE_STORAGE_BUCKET`
+  - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+  - `VITE_FIREBASE_APP_ID`
+  - `VITE_IMAGE_HOSTING_KEY`
+2. Build and deploy:
+
+```bash
+cd Agro-Mart-Client
+npm run build
+firebase deploy
+```
+
+### 3. Final Production Sync
+
+1. Set `FRONTEND_URL` in Vercel backend env to your Firebase URL.
+2. Set `VITE_API_URL` in client env to your Vercel backend URL.
+3. Redeploy both backend and frontend once after updating these URLs.
+4. Verify login, protected routes, payments, and order CSV download in production.
+
+---
+
 ## 📁 Project Structure
 
 ```
 agro-mart/
-├── client/                    # Frontend React Application
+├── Agro-Mart-Client/          # Frontend React Application
 │   ├── public/               # Static assets
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
 │   │   ├── pages/           # Page components
 │   │   ├── hooks/           # Custom React hooks
-│   │   ├── redux/           # Redux store and slices
+│   │   ├── store/           # Redux store and app state
 │   │   ├── utils/           # Utility functions
 │   │   ├── locales/         # i18n translation files
 │   │   └── App.jsx          # Root component
 │   ├── package.json
 │   └── vite.config.js
 │
-├── server/                    # Backend Node.js Application
+├── Agro-Mart-Server/          # Backend Node.js Application
 │   ├── index.js             # Server entry point & all routes
 │   ├── package.json
 │   └── .env                 # Environment variables
@@ -655,3 +708,4 @@ If you have any questions or need support, please open an issue in the repositor
 ⭐ Star this repository if you find it helpful!
 
 </div>
+# AGRO_MART
