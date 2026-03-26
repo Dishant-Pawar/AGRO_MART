@@ -4,6 +4,8 @@ import { FaCloudDownloadAlt } from "react-icons/fa";
 import OrderTable from "../overview/OrderTable";
 import { ThemeContext } from "../../../provider/ThemeProvider";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const Orders = () => {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
@@ -40,7 +42,7 @@ const Orders = () => {
 
   const handleDownload = async () => {
     try {
-      const res = await fetch("http://localhost:5000/orders/download");
+      const res = await fetch(`${API_BASE_URL}/orders/download`);
       const blob = await res.blob();
 
       if (!blob || blob.size === 0) {

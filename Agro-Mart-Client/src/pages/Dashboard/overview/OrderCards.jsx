@@ -10,6 +10,8 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { OrderContext } from "./OrderProvider";
 import { useTranslation } from "react-i18next";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const OrderCards = () => {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
@@ -17,7 +19,7 @@ const OrderCards = () => {
   const { orders } = useContext(OrderContext);
 
   useEffect(() => {
-    fetch("http://localhost:5000/order-stats")
+    fetch(`${API_BASE_URL}/order-stats`)
       .then((res) => res.json())
       .then((data) => setOrderStats(data))
       .catch((error) => console.error("Error fetching order stats:", error));

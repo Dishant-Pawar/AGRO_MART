@@ -5,6 +5,8 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ThemeContext } from "../../../../provider/ThemeProvider";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const UpdateProduct = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -17,9 +19,7 @@ const UpdateProduct = () => {
     // Fetching product details by id
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(
-          `https://agro-mart-server.vercel.app/dashboard/product/${id}`
-        );
+        const response = await axios.get(`${API_BASE_URL}/dashboard/product/${id}`);
         setProduct(response.data);
         setUpdatedProduct(response.data);
       } catch (error) {
@@ -47,7 +47,7 @@ const UpdateProduct = () => {
     };
     try {
       const response = await axios.patch(
-        `https://agro-mart-server.vercel.app/dashboard/product-update/${id}`,
+        `${API_BASE_URL}/dashboard/product-update/${id}`,
         { updatedProduct }
       );
       if (response.status === 200) {

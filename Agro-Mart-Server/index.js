@@ -15,6 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASSWORD;
 const is_live = process.env.IS_LIVE === "true";
+const frontendUrl = process.env.FRONTEND_URL || "https://agro-mart-e2cb4.web.app";
+const backendUrl = process.env.BACKEND_URL || "https://agro-mart-server.vercel.app";
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -948,10 +950,10 @@ async function run() {
         total_amount: totalAmount,
         currency: "BDT", // Change to your currency
         tran_id: tran_id,
-        success_url: "https://agro-mart-server.vercel.app/payment/success",
-        fail_url: "https://agro-mart-server.vercel.app/payment/fail",
-        cancel_url: "https://agro-mart-server.vercel.app/payment/cancel",
-        ipn_url: "https://agro-mart-server.vercel.app/payment/ipn",
+        success_url: `${backendUrl}/payment/success`,
+        fail_url: `${backendUrl}/payment/fail`,
+        cancel_url: `${backendUrl}/payment/cancel`,
+        ipn_url: `${backendUrl}/payment/ipn`,
         shipping_method: "NO",
         product_name: cartItems.map((item) => item.name).join(", "),
         product_category: "general",
@@ -984,7 +986,7 @@ async function run() {
       const paymentIntent = req.body;
 
       if (paymentIntent.status !== "VALID") {
-        return res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+        return res.redirect(`${frontendUrl}/payment/fail`);
       }
 
       try {
@@ -1003,20 +1005,20 @@ async function run() {
 
         if (!email) {
           console.error("Email not found in temporary storage");
-          return res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+          return res.redirect(`${frontendUrl}/payment/fail`);
         }
 
         // Fetch user data
         const user = await usersCollection.findOne({ email: email });
         if (!user) {
           console.error("User not found for email:", email);
-          return res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+          return res.redirect(`${frontendUrl}/payment/fail`);
         }
 
         // Validate cart items
         if (!cartItems.length || !cartIds.length) {
           console.error("No cart items or cart IDs found in temporary storage");
-          return res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+          return res.redirect(`${frontendUrl}/payment/fail`);
         }
 
         // Validate product IDs
@@ -1033,7 +1035,7 @@ async function run() {
 
         if (productIds.length !== cartItems.length) {
           console.error("Some productIds are invalid");
-          return res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+          return res.redirect(`${frontendUrl}/payment/fail`);
         }
 
         // Fetch product data
@@ -1064,7 +1066,7 @@ async function run() {
 
         if (stockErrors.length > 0) {
           console.error("Stock validation failed. Errors:", stockErrors);
-          return res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+          return res.redirect(`${frontendUrl}/payment/fail`);
         }
 
         // Prepare payment information
@@ -1113,21 +1115,21 @@ async function run() {
 
         // console.log("Payment saved to database:", paymentInfo);
 
-        res.redirect("https://agro-mart-e2cb4.web.app/payment/success");
+        res.redirect(`${frontendUrl}/payment/success`);
       } catch (error) {
         console.error("Error processing payment:", error);
-        res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+        res.redirect(`${frontendUrl}/payment/fail`);
       }
     });
 
     // Handle failure callback
     app.post("/payment/fail", (req, res) => {
-      res.redirect("https://agro-mart-e2cb4.web.app/payment/fail");
+      res.redirect(`${frontendUrl}/payment/fail`);
     });
 
     // Handle cancel callback
     app.post("/payment/cancel", (req, res) => {
-      res.redirect("https://agro-mart-e2cb4.web.app/payment/cancel");
+      res.redirect(`${frontendUrl}/payment/cancel`);
     });
 
     // Handle IPN (Instant Payment Notification)
@@ -1150,6 +1152,10 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.listen(port, () => {
-  console.log(`server is running on port: ${port}`);
-});
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  app.listen(port, () => {
+    console.log(`server is running on port: ${port}`);
+  });
+}

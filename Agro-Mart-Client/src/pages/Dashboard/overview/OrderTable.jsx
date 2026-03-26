@@ -4,6 +4,8 @@ import { ThemeContext } from "../../../provider/ThemeProvider";
 import { useReactToPrint } from "react-to-print";
 import toast from "react-hot-toast";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const statusColors = {
   Pending: "badge-warning",
   Delivered: "badge-success",
@@ -31,7 +33,7 @@ const OrderTable = ({ filters }) => {
         startDate: filters.startDate || "",
         endDate: filters.endDate || "",
       });
-      const res = await fetch(`http://localhost:5000/orders?${queryParams}`);
+      const res = await fetch(`${API_BASE_URL}/orders?${queryParams}`);
       const data = await res.json();
       setOrderData(data.orders);
       setTotalPages(data.totalPages);
@@ -66,9 +68,7 @@ const OrderTable = ({ filters }) => {
 
   const handleDownloadOrder = async (orderId, invoiceNo) => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/orders/${orderId}/download`
-      );
+      const res = await fetch(`${API_BASE_URL}/orders/${orderId}/download`);
       const blob = await res.blob();
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
@@ -81,7 +81,7 @@ const OrderTable = ({ filters }) => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/orders/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/orders/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
