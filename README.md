@@ -627,30 +627,6 @@ Authorization: Bearer <your_jwt_token>
 
 ---
 
-## 📸 Screenshots
-
-<div align="center">
-
-| Home Page | Product Listing |
-|:---------:|:---------------:|
-| ![Home](https://res.cloudinary.com/dohpypgmy/image/upload/v1766508117/cf84df71-4a4d-415c-975a-373442b281c6_ubhaw4.png) | ![Products](https://res.cloudinary.com/dohpypgmy/image/upload/v1766508117/cf84df71-4a4d-415c-975a-373442b281c6_ubhaw4.png) |
-
-| AI Crop Doctor | Weather Dashboard |
-|:--------------:|:-----------------:|
-| ![Crop Doctor](https://via.placeholder.com/400x250?text=AI+Crop+Doctor) | ![Weather](https://via.placeholder.com/400x250?text=Weather+Dashboard) |
-
-| Admin Dashboard | Order Management |
-|:---------------:|:----------------:|
-| ![Dashboard](https://via.placeholder.com/400x250?text=Admin+Dashboard) | ![Orders](https://via.placeholder.com/400x250?text=Order+Management) |
-
-</div>
-
-> 📝 *Replace placeholder images with actual screenshots of your application*
-
----
-
-## 👨‍💻 Team
-
 
 
 ## 🤝 Contributing
