@@ -651,29 +651,7 @@ Authorization: Bearer <your_jwt_token>
 
 ## 👨‍💻 Team
 
-<div align="center">
 
-### 👑 Team Leader
-
-| <img src="https://github.com/ashraful2871.png" width="130" height="130" style="border-radius:50%"/> |
-|:---:|
-| **Ashraful Islam** |
-| [@ashraful2871](https://github.com/ashraful2871) |
-| 🚀 **Team Leader & Lead Developer** |
-
----
-
-### Project Contributors
-
-| <img src="https://github.com/Tayebasultana.png" width="100" height="100" style="border-radius:50%"/> | <img src="https://github.com/aaliahammedpriom.png" width="100" height="100" style="border-radius:50%"/> | <img src="https://github.com/muntasir-mahmud-abdullah.png" width="100" height="100" style="border-radius:50%"/> |
-|:---:|:---:|:---:|
-| **Tayeba Sultana** | **Aalia Hammed Priom** | **Muntasir Mahmud Abdullah** |
-| [@Tayebasultana](https://github.com/Tayebasultana) | [@aaliahammedpriom](https://github.com/aaliahammedpriom) | [@muntasir-mahmud-abdullah](https://github.com/muntasir-mahmud-abdullah) |
-| Core Contributor | Contributor | Contributor |
-
-</div>
-
----
 
 ## 🤝 Contributing
 
